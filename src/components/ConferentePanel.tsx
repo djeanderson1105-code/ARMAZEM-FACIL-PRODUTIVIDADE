@@ -298,7 +298,7 @@ export default function ConferentePanel({ user, empresa, initialTab, theme = 'da
 
   const EQUIPE_DIURNA_PADRAO = [
     { nome: 'GILSON ROSA DA SILVA', cargo: 'Conferente', apelido: 'Gilson' },
-    { nome: 'GLADSON LISBOA DOS SANTOS', cargo: 'Ajudante', apelido: 'Gladson' },
+    { nome: 'GLADSON LISBOA DOS SANTOS', cargo: 'Conferente', apelido: 'Gladson' },
     { nome: 'OZENILDO SOUSA SILVA', cargo: 'Ajudante', apelido: 'Ozenildo' },
     { nome: 'DEJEAN SILVA DE OLIVEIRA', cargo: 'Ajudante', apelido: 'Dejean' },
     { nome: 'MARIVALDO ARTUR ALVES', cargo: 'Empilhador', apelido: 'Marivaldo' },

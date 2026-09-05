@@ -346,10 +346,20 @@ export default function LoginAuth({ onAuthSuccess, onBackToLanding }: LoginAuthP
 
     // Check official base defaults if still not found
     if (!colabData) {
-      const officialMatch = LISTA_COLABORADORES_OFICIAIS.find(c => 
-        String(c.matricula).trim().toUpperCase() === inputClean.toUpperCase() ||
-        String(c.nome).trim().toLowerCase() === inputClean.toLowerCase()
-      );
+      const officialMatch = LISTA_COLABORADORES_OFICIAIS.find(c => {
+        const cMat = String(c.matricula).trim().toUpperCase();
+        const cNome = String(c.nome).trim().toLowerCase();
+        const cCpf = String(c.cpf || '').replace(/\D/g, '');
+        const inp = inputClean.toLowerCase();
+        const inpDigits = inputClean.replace(/\D/g, '');
+        
+        return (
+          cMat === inputClean.toUpperCase() ||
+          cNome === inp ||
+          cNome.includes(inp) ||
+          (inpDigits.length >= 6 && cCpf.includes(inpDigits))
+        );
+      });
       if (officialMatch) {
         colabData = {
           matricula: officialMatch.matricula,
@@ -359,7 +369,9 @@ export default function LoginAuth({ onAuthSuccess, onBackToLanding }: LoginAuthP
           cpf: officialMatch.cpf,
           senha: 'Ambev10',
           ativo: true,
-          papel: officialMatch.cargo.toUpperCase() === 'ADMINISTRATIVO' ? 'admin' : officialMatch.cargo.toLowerCase()
+          papel: officialMatch.cargo.toUpperCase() === 'ADMINISTRATIVO' ? 'admin' :
+                 officialMatch.cargo.toUpperCase().includes('CONFERENTE') ? 'conferente' :
+                 officialMatch.cargo.toLowerCase()
         };
         colabDocId = `official_${officialMatch.matricula}`;
       }

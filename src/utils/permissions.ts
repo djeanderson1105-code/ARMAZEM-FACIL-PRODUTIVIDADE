@@ -150,22 +150,34 @@ export function getDefaultModulesForCargo(cargo: string | undefined | null): str
     case 'conferente':
       return [
         'visao-geral',
+        'dashboard',
+        'cat-produtividade',
+        'cat-dashboards',
+        'produtividade',
+        'ranking-produtividade',
+        'conferente',
         'ajudante',
+        'empilhador',
         'repack',
         'repack-dashboard',
         'despejo',
         'despejo-dashboard',
-        'armazem',
-        'logistica-dashboard',
-        'tmr-dashboard',
         'quebras',
         'quebras-dashboard',
         'validades',
         'fefo-dashboard',
         'refugo',
-        'empilhador',
+        'blitz',
+        'armazem',
+        'logistica-dashboard',
+        'tmr-dashboard',
+        'simulador-ressuprimento',
         'picking-dashboard',
-        'conferente'
+        'qualidade',
+        'reunioes',
+        'semana-qualidade',
+        'plataformas-externas',
+        'dn-swot'
       ];
     default:
       return ['visao-geral', 'ajudante'];
@@ -264,27 +276,44 @@ export function isPanelAllowedForUser(
     return allowedForAjudante.includes(panelId);
   }
 
-  // CONFERENTES: Access to ALL Operational Sectors and Operational Dashboards
+  // CONFERENTES: Access to ALL Productivity Tabs, Categories, Operational Modules, and Dashboards
   if (roleType === 'conferente') {
-    const operationalPanels = [
+    const conferentePanels = [
+      // Categorias
+      'cat-produtividade',
+      'cat-dashboards',
+      'produtividade',
+      'ranking-produtividade',
+      // Módulos de Produtividade & Operação
+      'conferente',
       'ajudante',
+      'empilhador',
       'repack',
-      'repack-dashboard',
       'despejo',
+      'quebras',
+      'refugo',
+      'blitz',
+      'validades',
+      // Dashboards & BI Operacional
+      'visao-geral',
+      'dashboard',
+      'quebras-dashboard',
+      'repack-dashboard',
       'despejo-dashboard',
-      'armazem',
+      'fefo-dashboard',
+      'picking-dashboard',
       'logistica-dashboard',
       'tmr-dashboard',
-      'quebras',
-      'quebras-dashboard',
-      'validades',
-      'fefo-dashboard',
-      'refugo',
-      'empilhador',
-      'picking-dashboard',
-      'conferente'
+      'simulador-ressuprimento',
+      // Governança, Qualidade e Apoio Operacional
+      'armazem',
+      'qualidade',
+      'reunioes',
+      'semana-qualidade',
+      'plataformas-externas',
+      'dn-swot'
     ];
-    return operationalPanels.includes(panelId);
+    return conferentePanels.includes(panelId);
   }
 
   // OTHER OPERATORS: Check specific module permissions

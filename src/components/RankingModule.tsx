@@ -55,12 +55,12 @@ export const LISTA_COLABORADORES_OFICIAIS = [
   { matricula: 'G1055', nome: 'DIOGENES PEREIRA DA SILVA', cargo: 'AJUDANTE', cpf: '701.931.834-71', turno: 'NOITE', funcaoGroup: 'Ajudante' as const },
   { matricula: 'G1154', nome: 'EDILSON VIEIRA DA SILVA', cargo: 'AJUDANTE', cpf: '099.129.724-57', turno: 'NOITE', funcaoGroup: 'Ajudante' as const },
   { matricula: 'G1128', nome: 'ELDENKLEBER MAURICIO DA SILVA', cargo: 'AJUDANTE', cpf: '000.618.854-01', turno: 'NOITE', funcaoGroup: 'Ajudante' as const },
-  { matricula: 'G1145', nome: 'GLADSON LISBOA DOS SANTOS', cargo: 'AJUDANTE', cpf: '017.832.554-63', turno: 'TARDE', funcaoGroup: 'Ajudante' as const },
   { matricula: 'G1147', nome: 'LUIS ANTONIO FREIRE MOREIRA', cargo: 'AJUDANTE', cpf: '088.770.774-25', turno: 'NOITE', funcaoGroup: 'Ajudante' as const },
   { matricula: 'G1125', nome: 'NATANAEL LUIZ DA SILVA', cargo: 'AJUDANTE', cpf: '708.229.224-44', turno: 'NOITE', funcaoGroup: 'Ajudante' as const },
   { matricula: 'G1137', nome: 'OZENILDO SOUSA SILVA', cargo: 'AJUDANTE', cpf: '083.601.774-90', turno: 'MANHÃ', funcaoGroup: 'Ajudante' as const },
 
   // CONFERENTE
+  { matricula: 'G1145', nome: 'GLADSON LISBOA DOS SANTOS', cargo: 'CONFERENTE', cpf: '017.832.554-63', turno: 'TARDE', funcaoGroup: 'Operador' as const },
   { matricula: 'G1121', nome: 'CICERO MATHEU DE OLIVEIRA SILVA', cargo: 'CONFERENTE', cpf: '148.472.344-99', turno: 'NOITE', funcaoGroup: 'Operador' as const },
   { matricula: 'G1088', nome: 'GILSON ROSA DA SILVA', cargo: 'CONFERENTE', cpf: '125.403.194-40', turno: 'MANHÃ', funcaoGroup: 'Operador' as const },
   { matricula: 'G1022', nome: 'MATEUS HENRIQUE DE SOUZA', cargo: 'CONFERENTE', cpf: '092.118.434-11', turno: 'TARDE', funcaoGroup: 'Operador' as const },

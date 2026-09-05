@@ -1981,7 +1981,7 @@ export default function CadastrosPanel({
                 <button
                   onClick={() => {
                     const data = [
-                      { 'Matrícula': 'G1160', 'Nome': 'GLADSON LISBOA DOS SANTOS', 'CPF': '017.832.554-63', 'Cargo': 'AJUDANTE DE ARMAZEM', 'Turno': 'TARDE' },
+                      { 'Matrícula': 'G1145', 'Nome': 'GLADSON LISBOA DOS SANTOS', 'CPF': '017.832.554-63', 'Cargo': 'CONFERENTE', 'Turno': 'TARDE' },
                       { 'Matrícula': 'G1163', 'Nome': 'OZENILDO SOUSA SILVA', 'CPF': '083.601.774-90', 'Cargo': 'AJUDANTE DE ARMAZEM', 'Turno': 'MANHÃ' },
                       { 'Matrícula': 'G1121', 'Nome': 'ADMILTON HERMINIO DOS SANTOS MARCELINO', 'CPF': '042.370.104-57', 'Cargo': 'AJUDANTE DE ARMAZEM', 'Turno': 'NOITE' },
                       { 'Matrícula': 'G1001', 'Nome': 'DIMAS EMANUEL MISSIAS DA SILVA', 'CPF': '014.305.954-85', 'Cargo': 'AJUDANTE DE ARMAZEM', 'Turno': 'NOITE' },
