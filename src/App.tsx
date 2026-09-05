@@ -23,25 +23,27 @@ import LogisticaDashboard from './components/LogisticaDashboard';
 import QuebrasDashboard from './components/QuebrasDashboard';
 import FefoDashboard from './components/FefoDashboard';
 import PickingDashboard from './components/PickingDashboard';
-import GestaoCapacidadeDashboard from './components/GestaoCapacidadeDashboard';
-import TmrDashboard from './components/TmrDashboard';
-import RegistrosPanel from './components/RegistrosPanel';
-import AcessosPanel from './components/AcessosPanel';
-import EstoqueHub from './components/EstoqueHub';
-import PadraoOperacionalPanel from './components/PadraoOperacionalPanel';
-import SimulacaoAcoesPanel from './components/SimulacaoAcoesPanel';
-import DadosRetroativosPanel from './components/DadosRetroativosPanel';
-import SimuladorRessuprimentoPanel from './components/SimuladorRessuprimentoPanel';
 import RankingModule from './components/RankingModule';
-import EficienciaMontagemPanel from './components/EficienciaMontagemPanel';
-import TreeKpiViewer from './components/TreeKpiViewer';
-import CadastrosPanel from './components/CadastrosPanel';
 import QualidadePanel from './components/QualidadePanel';
-import SemanaQualidadePanel from './components/SemanaQualidadePanel';
-import DnSwotPanel from './components/DnSwotPanel';
-import AuditoriaDpoPanel from './components/AuditoriaDpoPanel';
 import CategoryIndexPanel from './components/CategoryIndexPanel';
-import PlataformasExternasPanel from './components/PlataformasExternasPanel';
+
+// Lazy loaded secondary modules for instant navigation and minimal memory footprint
+const GestaoCapacidadeDashboard = React.lazy(() => import('./components/GestaoCapacidadeDashboard'));
+const TmrDashboard = React.lazy(() => import('./components/TmrDashboard'));
+const RegistrosPanel = React.lazy(() => import('./components/RegistrosPanel'));
+const AcessosPanel = React.lazy(() => import('./components/AcessosPanel'));
+const EstoqueHub = React.lazy(() => import('./components/EstoqueHub'));
+const PadraoOperacionalPanel = React.lazy(() => import('./components/PadraoOperacionalPanel'));
+const SimulacaoAcoesPanel = React.lazy(() => import('./components/SimulacaoAcoesPanel'));
+const DadosRetroativosPanel = React.lazy(() => import('./components/DadosRetroativosPanel'));
+const SimuladorRessuprimentoPanel = React.lazy(() => import('./components/SimuladorRessuprimentoPanel'));
+const EficienciaMontagemPanel = React.lazy(() => import('./components/EficienciaMontagemPanel'));
+const TreeKpiViewer = React.lazy(() => import('./components/TreeKpiViewer'));
+const CadastrosPanel = React.lazy(() => import('./components/CadastrosPanel'));
+const SemanaQualidadePanel = React.lazy(() => import('./components/SemanaQualidadePanel'));
+const DnSwotPanel = React.lazy(() => import('./components/DnSwotPanel'));
+const AuditoriaDpoPanel = React.lazy(() => import('./components/AuditoriaDpoPanel'));
+const PlataformasExternasPanel = React.lazy(() => import('./components/PlataformasExternasPanel'));
 import { TreinamentosQualidadePanel, 
   BloqueioArmazemPanel, 
   DevolucaoPanel, 
@@ -60,7 +62,7 @@ import { DiarioBordoComponent } from './components/DiarioBordoComponent';
 import { ReunioesComponent } from './components/ReunioesComponent';
 import { WlpDashboard } from './components/WlpDashboard';
 import { OperationalNotificationBell } from './components/OperationalNotificationBell';
-import { EmpresaDataProvider, useEmpresaData } from './context/EmpresaDataContext';
+import { EmpresaDataProvider, useEmpresaData, useViewUnit } from './context/EmpresaDataContext';
 import { safeSetLocalStorage, safeGetLocalStorage, safeSetSessionStorage, safeGetSessionStorage } from './utils/safeLocalStorage';
 
 import { auth, db, isCustomFirebaseConnected } from './firebase';
@@ -95,7 +97,7 @@ function HeaderClock({ theme }: { theme: 'light' | 'dark' }) {
 }
 
 function GlobalUnitSelector({ theme }: { theme: 'light' | 'dark' }) {
-  const { viewUnitMode, setViewUnitMode } = useEmpresaData();
+  const { viewUnitMode, setViewUnitMode } = useViewUnit();
   return (
     <div className={`flex items-center p-0.5 rounded-lg border font-black text-[9px] uppercase tracking-wider ${
       theme === 'dark' ? 'bg-[#151b23] border-[#222d3a] text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
@@ -476,7 +478,11 @@ export default function App() {
       }
     };
 
-    trackSession();
+    const timer = setTimeout(() => {
+      trackSession().catch(() => {});
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [user, activePanel]);
 
   // Sync theme to body element and localStorage
@@ -1478,17 +1484,16 @@ export default function App() {
             <div className={`absolute top-0 left-0 w-96 h-96 bg-gradient-to-br ${headerInfo.color} rounded-full blur-3xl pointer-events-none opacity-40 z-0`} />
 
             <div className={`relative z-10 ${activePanel.endsWith('-dashboard') ? 'max-w-full px-1' : 'max-w-[1300px]'} mx-auto w-full transition-all duration-300`}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activePanel}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                >
+              <React.Suspense fallback={
+                <div className="flex flex-col items-center justify-center p-12 text-slate-400">
+                  <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Carregando painel...</span>
+                </div>
+              }>
+                <div key={activePanel} className="transition-opacity duration-150">
                   {renderActivePanel()}
-                </motion.div>
-              </AnimatePresence>
+                </div>
+              </React.Suspense>
             </div>
           </main>
         </div>

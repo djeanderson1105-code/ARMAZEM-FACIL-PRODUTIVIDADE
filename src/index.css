@@ -354,7 +354,7 @@ body.light-theme textarea {
 .text-slate-600 {
   color: var(--dim) !important;
 }
-.border-[#222d3a] {
+.border-\[\#222d3a\] {
   border-color: var(--edge) !important;
 }
 

@@ -38,6 +38,7 @@ export function syncIncremental({
 
   let isUnsubscribed = false;
   let activeUnsub: (() => void) | null = null;
+  let saveTimer: any = null;
   const docsMap = new Map<string, any>();
 
   const localBackupKey = `cache_coll_${empresaId}_${collectionName}`;
@@ -46,6 +47,21 @@ export function syncIncremental({
     if (!isUnsubscribed) {
       onData(Array.from(docsMap.values()));
     }
+  };
+
+  const scheduleSaveBackup = () => {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      if (isUnsubscribed) return;
+      try {
+        const allItems = Array.from(docsMap.values());
+        // Cap backup to 150 items to avoid localStorage saturation
+        const toStore = allItems.length > 150 ? allItems.slice(0, 150) : allItems;
+        localStorage.setItem(localBackupKey, JSON.stringify(toStore));
+      } catch (_) {
+        // Silent fallback: IndexedDB handles persistence
+      }
+    }, 1500);
   };
 
   // 1. Camada 0: Leitura instantânea do backup de segurança em localStorage (0ms)
@@ -105,13 +121,8 @@ export function syncIncremental({
         docsMap.clear();
         newMap.forEach((val, key) => docsMap.set(key, val));
 
-        // Salva backup de contingência no localStorage para carga instantânea futura
-        try {
-          const allItems = Array.from(docsMap.values());
-          localStorage.setItem(localBackupKey, JSON.stringify(allItems));
-        } catch (storageErr) {
-          // Caso localStorage esteja cheio ou inacessível, o IndexedDB do Firestore permanece ativo
-        }
+        // Agenda backup em segundo plano sem travar a thread de interface
+        scheduleSaveBackup();
 
         notify();
       },
@@ -126,6 +137,9 @@ export function syncIncremental({
 
   return () => {
     isUnsubscribed = true;
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+    }
     if (activeUnsub) {
       activeUnsub();
     }

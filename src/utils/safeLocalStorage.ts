@@ -191,11 +191,9 @@ export function initSafeLocalStorage() {
           String(e).toLowerCase().includes('quota') ||
           String(e).toLowerCase().includes('exceeded')
         ) {
-          // Phase 1: Clear ONLY non-critical temporary cache items
-          const keysToRemove: string[] = [];
-          const keysToTrim: string[] = [];
-
+          // Phase 1: Fast purge of disposable temporary cache keys without heavy JSON loops
           try {
+            const keysToRemove: string[] = [];
             for (let i = this.length - 1; i >= 0; i--) {
               const k = this.key(i);
               if (!k || isCriticalUserDataKey(k)) continue;
@@ -206,56 +204,34 @@ export function initSafeLocalStorage() {
                 k.startsWith('firestore_') ||
                 k.startsWith('firebase_') ||
                 k.startsWith('local_acessos_') ||
+                k.startsWith('cache_coll_') ||
                 k.includes('_temp_') ||
                 k.includes('_cache_')
               ) {
                 keysToRemove.push(k);
-              } else if (k !== key) {
-                keysToTrim.push(k);
               }
             }
+            keysToRemove.forEach(k => {
+              try { originalRemoveItem.call(this, k); } catch (_) {}
+            });
           } catch (_) {}
 
-          keysToRemove.forEach(k => {
-            try { originalRemoveItem.call(this, k); } catch (_) {}
-          });
-
-          // Try again
+          // Try again immediately after fast purge
           try {
             originalSetItem.call(this, key, valueToStore);
             return;
           } catch (_) {}
 
-          // Phase 2: Trim ONLY non-critical large array keys
-          for (const k of keysToTrim) {
-            if (isCriticalUserDataKey(k)) continue;
-            try {
-              const rawVal = originalGetItem.call(this, k);
-              if (rawVal && rawVal.length > 20000) {
-                const trimmed = trimJsonArrayString(rawVal, 200);
-                if (trimmed.length < rawVal.length) {
-                  originalSetItem.call(this, k, trimmed);
-                }
-              }
-            } catch (_) {}
-          }
-
-          // Try again
-          try {
-            originalSetItem.call(this, key, valueToStore);
-            return;
-          } catch (_) {}
-
-          // Phase 3: If key is critical, preserve as is; if not critical, trim
+          // Phase 2: If item itself is not critical and very large, trim it directly
           if (!isCriticalUserDataKey(key)) {
-            valueToStore = trimJsonArrayString(valueToStore, 200);
+            valueToStore = trimJsonArrayString(valueToStore, 100);
           }
 
           try {
             originalSetItem.call(this, key, valueToStore);
             return;
           } catch (_) {
-            console.warn(`[localStorage] Handled QuotaExceededError for key "${key}". Critical user imports preserved.`);
+            // Silently handle quota exhaustion without crashing or stalling UI
           }
         } else {
           console.warn(`[localStorage] Handled error setting key "${key}":`, e);

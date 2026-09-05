@@ -120,34 +120,60 @@ export function EmpresaDataProvider({
 
   const refCounts = useRef<Record<string, number>>({});
   const unsubs = useRef<Record<string, () => void>>({});
+  const cleanupTimers = useRef<Record<string, any>>({});
+  const pendingUpdates = useRef<Record<string, any>>({});
+  const batchRaf = useRef<number | null>(null);
+
+  const flushUpdates = useCallback(() => {
+    batchRaf.current = null;
+    const updates = { ...pendingUpdates.current };
+    pendingUpdates.current = {};
+    setState((prev) => ({
+      ...prev,
+      ...updates,
+      loaded: true,
+    }));
+  }, []);
 
   useEffect(() => {
     // Reset state when empresaId changes or logs out
     setState(EMPTY_STATE);
     refCounts.current = {};
+    Object.values(cleanupTimers.current).forEach(timer => clearTimeout(timer));
+    cleanupTimers.current = {};
     Object.values(unsubs.current).forEach(unsub => {
       if (typeof unsub === 'function') unsub();
     });
     unsubs.current = {};
+    if (batchRaf.current) {
+      cancelAnimationFrame(batchRaf.current);
+      batchRaf.current = null;
+    }
+    pendingUpdates.current = {};
   }, [empresaId]);
 
   const subscribeCollection = useCallback(
     (nome: string, chave: keyof Omit<EmpresaDataState, 'loaded' | 'empresaId' | 'subscribeCollection'>) => {
       if (!empresaId) return () => {};
 
+      // Cancela timer de encerramento caso a coleção esteja em período de tolerância
+      if (cleanupTimers.current[nome]) {
+        clearTimeout(cleanupTimers.current[nome]);
+        delete cleanupTimers.current[nome];
+      }
+
       refCounts.current[nome] = (refCounts.current[nome] || 0) + 1;
 
       // Inicia a sincronização incremental se for a primeira subscrição ativa dessa coleção
-      if (refCounts.current[nome] === 1 && !unsubs.current[nome]) {
+      if (!unsubs.current[nome]) {
         const cleanup = syncIncremental({
           collectionName: nome,
           empresaId,
           onData: (data) => {
-            setState((prev) => ({
-              ...prev,
-              [chave]: data,
-              loaded: true,
-            }));
+            pendingUpdates.current[chave] = data;
+            if (!batchRaf.current) {
+              batchRaf.current = requestAnimationFrame(flushUpdates);
+            }
           },
         });
         unsubs.current[nome] = cleanup;
@@ -156,12 +182,21 @@ export function EmpresaDataProvider({
       return () => {
         refCounts.current[nome] = Math.max(0, (refCounts.current[nome] || 1) - 1);
         if (refCounts.current[nome] === 0 && unsubs.current[nome]) {
-          unsubs.current[nome]();
-          delete unsubs.current[nome];
+          // Período de tolerância de 45 segundos para navegação ágil entre guias sem destruição de listeners
+          if (cleanupTimers.current[nome]) {
+            clearTimeout(cleanupTimers.current[nome]);
+          }
+          cleanupTimers.current[nome] = setTimeout(() => {
+            if (refCounts.current[nome] === 0 && unsubs.current[nome]) {
+              unsubs.current[nome]();
+              delete unsubs.current[nome];
+            }
+            delete cleanupTimers.current[nome];
+          }, 45000);
         }
       };
     },
-    [empresaId]
+    [empresaId, flushUpdates]
   );
 
   return (
@@ -177,6 +212,18 @@ export function EmpresaDataProvider({
       {children}
     </EmpresaDataContext.Provider>
   );
+}
+
+/**
+ * Hook leve para obter a unidade de visualização global (R$ ou HL)
+ * sem subscrever coleções de dados pesadas.
+ */
+export function useViewUnit() {
+  const ctx = useContext(EmpresaDataContext);
+  return {
+    viewUnitMode: ctx.viewUnitMode,
+    setViewUnitMode: ctx.setViewUnitMode,
+  };
 }
 
 /**
