@@ -121,7 +121,58 @@ const MODULES_LIST = [
   { id: 'cadastros', label: 'Cadastros Gerais & Governança' },
 ];
 
-export default function CadastrosPanel({
+class CadastrosErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[CadastrosPanel Error Boundary Caught]:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-[#111a30] border border-amber-500/30 rounded-2xl text-center space-y-4 my-6 shadow-xl">
+          <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-xl flex items-center justify-center mx-auto text-xl font-bold">
+            ⚠️
+          </div>
+          <h3 className="text-base font-black text-white uppercase tracking-wider">
+            Painel de Cadastros em Recuperação Segura
+          </h3>
+          <p className="text-xs text-slate-400 max-w-lg mx-auto">
+            Detectamos uma inconsistência temporária nos dados locais. Suas informações continuam salvas. Clique abaixo para restabelecer a exibição com os parâmetros seguros.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer shadow-md"
+            >
+              Recarregar Cadastros
+            </button>
+            <button
+              onClick={() => {
+                window.sessionStorage.removeItem('retry-lazy-refreshed');
+                window.location.reload();
+              }}
+              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer border border-slate-700"
+            >
+              Reiniciar Página
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function CadastrosPanelContent({
   user,
   empresa,
   initialSubTab = 'produtos',
@@ -353,13 +404,13 @@ export default function CadastrosPanel({
   };
 
   const handleSaveLogin = async () => {
-    const mat = (loginForm.usuario || loginForm.colabMatricula).trim().toUpperCase();
+    const mat = String(loginForm.usuario || loginForm.colabMatricula || '').trim().toUpperCase();
     if (!mat) {
       alert('Selecione ou informe a matrícula/usuário para o login.');
       return;
     }
 
-    const colabTarget = allColaboradores.find(c => c.matricula.trim().toUpperCase() === mat);
+    const colabTarget = allColaboradores.find(c => String(c.matricula || '').trim().toUpperCase() === mat);
 
     const cargoMap: Record<string, string> = {
       'Administrativo': 'Administrativo',
@@ -426,8 +477,11 @@ export default function CadastrosPanel({
 
     const key = `colaboradores_${empresaId}`;
     const map = new Map<string, ColaboradorMaster>();
-    allColaboradores.forEach(c => map.set(c.matricula.trim().toUpperCase(), c));
-    map.set(updatedColab.matricula, updatedColab);
+    allColaboradores.forEach(c => {
+      const k = String(c.matricula || '').trim().toUpperCase();
+      if (k) map.set(k, c);
+    });
+    map.set(String(updatedColab.matricula || '').trim().toUpperCase(), updatedColab);
 
     localStorage.setItem(key, JSON.stringify(Array.from(map.values())));
     localStorage.setItem(`colaboradores_custom_base_${empresaId}`, 'true');
@@ -451,8 +505,11 @@ export default function CadastrosPanel({
 
     const key = `colaboradores_${empresaId}`;
     const map = new Map<string, ColaboradorMaster>();
-    allColaboradores.forEach(col => map.set(col.matricula.trim().toUpperCase(), col));
-    map.set(c.matricula.trim().toUpperCase(), updated);
+    allColaboradores.forEach(col => {
+      const k = String(col.matricula || '').trim().toUpperCase();
+      if (k) map.set(k, col);
+    });
+    map.set(String(c.matricula || '').trim().toUpperCase(), updated);
     localStorage.setItem(key, JSON.stringify(Array.from(map.values())));
     localStorage.setItem(`colaboradores_custom_base_${empresaId}`, 'true');
 
@@ -461,13 +518,14 @@ export default function CadastrosPanel({
 
   const filteredLogins = useMemo(() => {
     return allColaboradores.filter(c => {
-      if (deletedMatriculas.includes(c.matricula)) return false;
+      const mat = String(c.matricula || '').trim();
+      if (mat && deletedMatriculas.includes(mat)) return false;
 
-      const q = acessoSearch.toLowerCase().trim();
+      const q = String(acessoSearch || '').toLowerCase().trim();
       const matchesSearch = !q ||
-        c.matricula.toLowerCase().includes(q) ||
-        c.nome.toLowerCase().includes(q) ||
-        (c.cargo && c.cargo.toLowerCase().includes(q));
+        mat.toLowerCase().includes(q) ||
+        String(c.nome || '').toLowerCase().includes(q) ||
+        String(c.cargo || '').toLowerCase().includes(q);
 
       const roleType = autoAssignRoleFromCargo(c.cargo);
       const matchesRole = acessoRoleFilter === 'TODOS' ||
@@ -500,8 +558,11 @@ export default function CadastrosPanel({
 
     const key = `colaboradores_${empresaId}`;
     const map = new Map<string, ColaboradorMaster>();
-    allColaboradores.forEach(col => map.set(col.matricula.trim().toUpperCase(), col));
-    map.set(c.matricula.trim().toUpperCase(), updated);
+    allColaboradores.forEach(col => {
+      const k = String(col.matricula || '').trim().toUpperCase();
+      if (k) map.set(k, col);
+    });
+    map.set(String(c.matricula || '').trim().toUpperCase(), updated);
     localStorage.setItem(key, JSON.stringify(Array.from(map.values())));
 
     setLocalVersion(v => v + 1);
@@ -530,27 +591,24 @@ export default function CadastrosPanel({
 
     const key = `colaboradores_${empresaId}`;
     const map = new Map<string, ColaboradorMaster>();
-    allColaboradores.forEach(col => map.set(col.matricula.trim().toUpperCase(), col));
-    map.set(c.matricula.trim().toUpperCase(), updated);
+    allColaboradores.forEach(col => {
+      const k = String(col.matricula || '').trim().toUpperCase();
+      if (k) map.set(k, col);
+    });
+    map.set(String(c.matricula || '').trim().toUpperCase(), updated);
     localStorage.setItem(key, JSON.stringify(Array.from(map.values())));
 
     setLocalVersion(v => v + 1);
   };
 
-  // Seed default product catalogue if collection is empty and base NOT explicitly cleared by user
-  useEffect(() => {
-    const isCleared = localStorage.getItem(`produtos_cleared_${empresaId}`) === 'true';
-    if (!isCleared && empresaData.loaded && empresaData.produtos.length === 0 && !seedingProdutos) {
-      handleSeedDefaultProducts();
-    }
-  }, [empresaData.loaded, empresaData.produtos.length, empresaId]);
-
+  // Safe helper to seed default products on demand using batched writes
   const handleSeedDefaultProducts = async () => {
+    if (seedingProdutos) return;
     setSeedingProdutos(true);
     try {
       const initialSeed: Omit<ProdutoMaster, '_docId'>[] = PRODUCT_MASTER_DATA.slice(0, 80).map((p) => {
         let grupo = 'Cervejas';
-        const d = p.descricao.toUpperCase();
+        const d = String(p.descricao || '').toUpperCase();
         if (d.includes('GUARANA') || d.includes('PEPSI') || d.includes('SUKITA') || d.includes('SODA') || d.includes('H2OH') || d.includes('TONICA')) {
           grupo = 'Refrigerantes';
         } else if (d.includes('AGUA') || d.includes('GATORADE') || d.includes('SUCO') || d.includes('INDAIA')) {
@@ -577,12 +635,23 @@ export default function CadastrosPanel({
       });
 
       if (db) {
-        for (const item of initialSeed) {
-          await addDoc(collection(db, 'produtos'), item);
+        for (let i = 0; i < initialSeed.length; i += 40) {
+          const batch = writeBatch(db);
+          initialSeed.slice(i, i + 40).forEach(item => {
+            const ref = doc(collection(db, 'produtos'));
+            batch.set(ref, item);
+          });
+          await batch.commit();
         }
       }
+
+      const key = `produtos_${empresaId}`;
+      localStorage.setItem(key, JSON.stringify(initialSeed));
+      localStorage.removeItem(`produtos_cleared_${empresaId}`);
+      setLocalVersion(v => v + 1);
+      alert('Catálogo oficial sincronizado com sucesso!');
     } catch (e) {
-      console.error('Erro ao popular produtos:', e);
+      console.error('Erro ao sincronizar produtos:', e);
     } finally {
       setSeedingProdutos(false);
     }
@@ -893,22 +962,92 @@ export default function CadastrosPanel({
     XLSX.writeFile(wb, 'modelo_cadastro_produtos_sobrescrever.xlsx');
   };
 
+  // Consolidated master product catalogue combining Firestore, LocalStorage and Official Ambev Defaults
+  const allProdutos = useMemo<ProdutoMaster[]>(() => {
+    const firestoreList = empresaData.produtos || [];
+    let localList: ProdutoMaster[] = [];
+    try {
+      const saved = localStorage.getItem(`produtos_${empresaId}`);
+      if (saved) localList = JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading local produtos:', e);
+    }
+
+    const isCleared = localStorage.getItem(`produtos_cleared_${empresaId}`) === 'true';
+
+    if (isCleared && localList.length === 0 && firestoreList.length === 0) {
+      return [];
+    }
+
+    const map = new Map<string, ProdutoMaster>();
+
+    // Add official defaults if not cleared and no existing products
+    if (!isCleared && firestoreList.length === 0 && localList.length === 0) {
+      PRODUCT_MASTER_DATA.slice(0, 80).forEach(p => {
+        let grupo = 'Cervejas';
+        const d = String(p.descricao || '').toUpperCase();
+        if (d.includes('GUARANA') || d.includes('PEPSI') || d.includes('SUKITA') || d.includes('SODA') || d.includes('H2OH') || d.includes('TONICA')) {
+          grupo = 'Refrigerantes';
+        } else if (d.includes('AGUA') || d.includes('GATORADE') || d.includes('SUCO') || d.includes('INDAIA')) {
+          grupo = 'Águas & NABS';
+        } else if (d.includes('BEATS') || d.includes('STELLA') || d.includes('CORONA') || d.includes('BUDWEISER') || d.includes('COLORADO') || d.includes('BECKS')) {
+          grupo = 'Puro Malte / Premium';
+        }
+
+        let curva: 'A' | 'B' | 'C' = 'B';
+        if (p.valor > 50 || d.includes('600ML') || d.includes('1L') || d.includes('LATA')) curva = 'A';
+        if (p.valor < 20) curva = 'C';
+
+        const cod = String(p.cod || '').trim();
+        if (cod) {
+          map.set(cod, {
+            _docId: `default_${cod}`,
+            empresaId,
+            codigo: cod,
+            descricao: p.descricao,
+            fator: p.fator,
+            valor: p.valor,
+            fatorHecto: p.fatorHecto,
+            grupo,
+            curva,
+            _criadoEm: 'oficial'
+          });
+        }
+      });
+    }
+
+    // LocalStorage override
+    localList.forEach(p => {
+      const cod = String(p.codigo || '').trim();
+      if (cod) map.set(cod, p);
+    });
+
+    // Firestore override (highest priority)
+    firestoreList.forEach(p => {
+      const cod = String(p.codigo || '').trim();
+      if (cod) map.set(cod, p);
+    });
+
+    return Array.from(map.values());
+  }, [empresaData.produtos, empresaId, localVersion]);
+
   // Filtered Products List
   const filteredProdutos = useMemo(() => {
-    return empresaData.produtos.filter(p => {
-      const matchesSearch = !produtoSearch || 
-        p.codigo.toLowerCase().includes(produtoSearch.toLowerCase()) || 
-        p.descricao.toLowerCase().includes(produtoSearch.toLowerCase());
+    const s = String(produtoSearch || '').toLowerCase().trim();
+    return allProdutos.filter(p => {
+      const cod = String(p.codigo || '').toLowerCase();
+      const desc = String(p.descricao || '').toLowerCase();
+      const matchesSearch = !s || cod.includes(s) || desc.includes(s);
       const matchesGrupo = filterGrupo === 'TODOS' || p.grupo === filterGrupo;
       const matchesCurva = filterCurva === 'TODAS' || p.curva === filterCurva;
       return matchesSearch && matchesGrupo && matchesCurva;
     });
-  }, [empresaData.produtos, produtoSearch, filterGrupo, filterCurva]);
+  }, [allProdutos, produtoSearch, filterGrupo, filterCurva]);
 
   const gruposList = useMemo(() => {
-    const list = Array.from(new Set(empresaData.produtos.map(p => p.grupo).filter(Boolean)));
+    const list = Array.from(new Set(allProdutos.map(p => p.grupo).filter(Boolean)));
     return ['TODOS', ...list];
-  }, [empresaData.produtos]);
+  }, [allProdutos]);
 
   // ── COLABORADOR HANDLERS ──
   const openNewColabModal = () => {
@@ -1617,7 +1756,7 @@ export default function CadastrosPanel({
                 }`}
               >
                 <Package className="w-4 h-4" />
-                Produtos ({empresaData.produtos.length})
+                Produtos ({allProdutos.length})
               </button>
 
               <button
@@ -1748,18 +1887,32 @@ export default function CadastrosPanel({
                 />
               </label>
 
-              {(empresaData.produtos.length > 0 || filteredProdutos.length > 0) && (
+              {allProdutos.length === 0 && (
+                <button
+                  type="button"
+                  onClick={handleSeedDefaultProducts}
+                  disabled={seedingProdutos}
+                  className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                  title="Restaurar catálogo oficial Ambev"
+                >
+                  <RefreshCw className={`w-4 h-4 ${seedingProdutos ? 'animate-spin' : ''}`} />
+                  {seedingProdutos ? 'Sincronizando...' : 'Restaurar Produtos Padrão'}
+                </button>
+              )}
+
+              {(allProdutos.length > 0 || filteredProdutos.length > 0) && (
                 <button
                   type="button"
                   onClick={async () => {
                     if (confirm(`⚠️ Tem certeza que deseja ZERAR E EXCLUIR TODA A BASE DE PRODUTOS CADASTRADOS? Esta ação não pode ser desfeita.`)) {
                       if (db) {
-                        for (const p of empresaData.produtos) {
-                          if (p._docId && !p._docId.startsWith('local_')) {
-                            try {
-                              await deleteDoc(doc(db, 'produtos', p._docId));
-                            } catch (e) {}
-                          }
+                        const list = allProdutos.filter(p => p._docId && !p._docId.startsWith('local_') && !p._docId.startsWith('default_'));
+                        for (let i = 0; i < list.length; i += 40) {
+                          const batch = writeBatch(db);
+                          list.slice(i, i + 40).forEach(p => {
+                            batch.delete(doc(db, 'produtos', p._docId!));
+                          });
+                          await batch.commit();
                         }
                       }
                       localStorage.setItem(`produtos_${empresaId}`, JSON.stringify([]));
@@ -3429,5 +3582,13 @@ export default function CadastrosPanel({
         </div>
       )}
     </div>
+  );
+}
+
+export default function CadastrosPanel(props: CadastrosPanelProps) {
+  return (
+    <CadastrosErrorBoundary>
+      <CadastrosPanelContent {...props} />
+    </CadastrosErrorBoundary>
   );
 }

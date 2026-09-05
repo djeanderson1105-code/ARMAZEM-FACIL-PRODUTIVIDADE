@@ -26,24 +26,50 @@ import PickingDashboard from './components/PickingDashboard';
 import RankingModule from './components/RankingModule';
 import QualidadePanel from './components/QualidadePanel';
 import CategoryIndexPanel from './components/CategoryIndexPanel';
+import CadastrosPanel from './components/CadastrosPanel';
 
-// Lazy loaded secondary modules for instant navigation and minimal memory footprint
-const GestaoCapacidadeDashboard = React.lazy(() => import('./components/GestaoCapacidadeDashboard'));
-const TmrDashboard = React.lazy(() => import('./components/TmrDashboard'));
-const RegistrosPanel = React.lazy(() => import('./components/RegistrosPanel'));
-const AcessosPanel = React.lazy(() => import('./components/AcessosPanel'));
-const EstoqueHub = React.lazy(() => import('./components/EstoqueHub'));
-const PadraoOperacionalPanel = React.lazy(() => import('./components/PadraoOperacionalPanel'));
-const SimulacaoAcoesPanel = React.lazy(() => import('./components/SimulacaoAcoesPanel'));
-const DadosRetroativosPanel = React.lazy(() => import('./components/DadosRetroativosPanel'));
-const SimuladorRessuprimentoPanel = React.lazy(() => import('./components/SimuladorRessuprimentoPanel'));
-const EficienciaMontagemPanel = React.lazy(() => import('./components/EficienciaMontagemPanel'));
-const TreeKpiViewer = React.lazy(() => import('./components/TreeKpiViewer'));
-const CadastrosPanel = React.lazy(() => import('./components/CadastrosPanel'));
-const SemanaQualidadePanel = React.lazy(() => import('./components/SemanaQualidadePanel'));
-const DnSwotPanel = React.lazy(() => import('./components/DnSwotPanel'));
-const AuditoriaDpoPanel = React.lazy(() => import('./components/AuditoriaDpoPanel'));
-const PlataformasExternasPanel = React.lazy(() => import('./components/PlataformasExternasPanel'));
+// Resilient chunk loader with automatic reload retry on CDN/GitHub Pages cache invalidation
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>
+) {
+  return React.lazy(async () => {
+    try {
+      const mod = await componentImport();
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem('af_chunk_retry');
+      }
+      return mod;
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        const hasRetried = window.sessionStorage.getItem('af_chunk_retry');
+        if (!hasRetried) {
+          window.sessionStorage.setItem('af_chunk_retry', 'true');
+          window.location.reload();
+          return new Promise(() => {});
+        }
+        window.sessionStorage.removeItem('af_chunk_retry');
+      }
+      throw error;
+    }
+  });
+}
+
+// Lazy loaded secondary modules with resilient chunk fetching
+const GestaoCapacidadeDashboard = lazyWithRetry(() => import('./components/GestaoCapacidadeDashboard'));
+const TmrDashboard = lazyWithRetry(() => import('./components/TmrDashboard'));
+const RegistrosPanel = lazyWithRetry(() => import('./components/RegistrosPanel'));
+const AcessosPanel = lazyWithRetry(() => import('./components/AcessosPanel'));
+const EstoqueHub = lazyWithRetry(() => import('./components/EstoqueHub'));
+const PadraoOperacionalPanel = lazyWithRetry(() => import('./components/PadraoOperacionalPanel'));
+const SimulacaoAcoesPanel = lazyWithRetry(() => import('./components/SimulacaoAcoesPanel'));
+const DadosRetroativosPanel = lazyWithRetry(() => import('./components/DadosRetroativosPanel'));
+const SimuladorRessuprimentoPanel = lazyWithRetry(() => import('./components/SimuladorRessuprimentoPanel'));
+const EficienciaMontagemPanel = lazyWithRetry(() => import('./components/EficienciaMontagemPanel'));
+const TreeKpiViewer = lazyWithRetry(() => import('./components/TreeKpiViewer'));
+const SemanaQualidadePanel = lazyWithRetry(() => import('./components/SemanaQualidadePanel'));
+const DnSwotPanel = lazyWithRetry(() => import('./components/DnSwotPanel'));
+const AuditoriaDpoPanel = lazyWithRetry(() => import('./components/AuditoriaDpoPanel'));
+const PlataformasExternasPanel = lazyWithRetry(() => import('./components/PlataformasExternasPanel'));
 import { TreinamentosQualidadePanel, 
   BloqueioArmazemPanel, 
   DevolucaoPanel, 
@@ -181,7 +207,7 @@ export default function App() {
 
   const [activePanel, setActivePanel] = useState<string>(() => {
     try {
-      const savedPanel = localStorage.getItem('af_active_panel');
+      const savedPanel = localStorage.getItem('af_active_panel') || localStorage.getItem('af_logged_panel');
       if (savedPanel) return savedPanel;
     } catch (e) {}
     return 'produtividade';
@@ -292,8 +318,10 @@ export default function App() {
   useEffect(() => {
     try {
       if (user && activePanel && activePanel !== 'landing') {
+        localStorage.setItem('af_active_panel', activePanel);
         localStorage.setItem('af_logged_panel', activePanel);
       } else if (!user) {
+        localStorage.removeItem('af_active_panel');
         localStorage.removeItem('af_logged_panel');
       }
     } catch (e) {
@@ -650,6 +678,7 @@ export default function App() {
     localStorage.removeItem('af_logged_user');
     localStorage.removeItem('af_logged_empresa');
     localStorage.removeItem('af_logged_panel');
+    localStorage.removeItem('af_active_panel');
 
     if (auth) {
       await signOut(auth);
