@@ -1,0 +1,222 @@
+{
+  "entities": {
+    "Usuario": {
+      "title": "Usuario",
+      "description": "Cadastro de usuários administrativos e de controle",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "empresaId": { "type": "string" },
+        "papel": { "type": "string", "enum": ["admin", "controle", "operador"] },
+        "status": { "type": "string", "enum": ["ativo", "inativo"] },
+        "mfaHabilitado": { "type": "boolean" }
+      },
+      "required": ["nome", "email", "empresaId", "papel"]
+    },
+    "Empresa": {
+      "title": "Empresa",
+      "description": "Empresas/Unidades cadastradas no sistema",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" },
+        "plano": { "type": "string" },
+        "modulos": { "type": "array" },
+        "ativo": { "type": "boolean" }
+      },
+      "required": ["nome", "cidade", "estado", "ativo"]
+    },
+    "Colaborador": {
+      "title": "Colaborador",
+      "description": "Colaboradores e operadores que usam matrícula e senha",
+      "type": "object",
+      "properties": {
+        "matricula": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "senha": { "type": "string" },
+        "funcao": { "type": "string" },
+        "empresaId": { "type": "string" }
+      },
+      "required": ["matricula", "nome", "senha", "funcao", "empresaId"]
+    },
+    "Despejo": {
+      "title": "Despejo",
+      "description": "Registros de despejo de líquidos",
+      "type": "object",
+      "properties": {
+        "data": { "type": "string" },
+        "colaborador": { "type": "string" },
+        "embalagem": { "type": "string" },
+        "quantidade": { "type": "integer" },
+        "inicio": { "type": "string" },
+        "fim": { "type": "string" },
+        "tempo": { "type": "string" },
+        "statusMeta": { "type": "string" },
+        "empresaId": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["data", "colaborador", "embalagem", "quantidade", "empresaId"]
+    },
+    "Acesso": {
+      "title": "Acesso",
+      "description": "Logs de controle de acessos de segurança e auditoria de navegação",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "userId": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "papel": { "type": "string" },
+        "loginEm": { "type": "string" },
+        "loginData": { "type": "string" },
+        "loginHora": { "type": "string" },
+        "logoutEm": { "type": "string" },
+        "ultimoAcesso": { "type": "string" },
+        "abasAcessadas": { "type": "array" },
+        "atividades": { "type": "array" },
+        "ativo": { "type": "boolean" }
+      },
+      "required": ["empresaId", "userId", "nome", "email", "loginEm", "ativo"]
+    },
+    "Acao": {
+      "title": "Acao",
+      "description": "Planos de ação e alertas operacionais",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "titulo": { "type": "string" },
+        "setor": { "type": "string" },
+        "prioridade": { "type": "string" },
+        "responsavel": { "type": "string" },
+        "status": { "type": "string" },
+        "limiteEm": { "type": "string" },
+        "criadoEm": { "type": "string" },
+        "origemAlertaId": { "type": "string" },
+        "tipo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "criadoPorNome": { "type": "string" },
+        "criadoPorUid": { "type": "string" }
+      },
+      "required": ["empresaId", "titulo", "status"]
+    },
+    "Quebra": {
+      "title": "Quebra",
+      "description": "Registros de quebras e avarias operacionais",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "data": { "type": "string" },
+        "dataISO": { "type": "string" },
+        "fiscal": { "type": "string" },
+        "codProduto": { "type": "string" },
+        "descricao": { "type": "string" },
+        "quantidade": { "type": "number" },
+        "area": { "type": "string" },
+        "turno": { "type": "string" },
+        "codQuebra": { "type": "string" },
+        "motivo": { "type": "string" },
+        "colaboradorQuebrou": { "type": "string" }
+      },
+      "required": ["empresaId", "data", "descricao", "quantidade"]
+    },
+    "Validade": {
+      "title": "Validade",
+      "description": "Estoque de lotes e validades de produtos no armazém",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "codigo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "validade": { "type": "string" },
+        "caixa": { "type": "number" },
+        "palhete": { "type": "number" },
+        "localizacao": { "type": "string" },
+        "bloco": { "type": "string" }
+      },
+      "required": ["empresaId", "codigo", "descricao", "validade"]
+    },
+    "ValidadeRetirada": {
+      "title": "ValidadeRetirada",
+      "description": "Histórico de validades retiradas e recolhidas do armazém",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "id": { "type": "string" },
+        "codigo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "validade": { "type": "string" },
+        "quantidadeCx": { "type": "number" },
+        "origem": { "type": "string" },
+        "bloco": { "type": "string" },
+        "motivo": { "type": "string" },
+        "destino": { "type": "string" },
+        "colaborador": { "type": "string" },
+        "dataHora": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["empresaId", "codigo", "descricao", "validade", "quantidadeCx"]
+    },
+    "Repack": {
+      "title": "Repack",
+      "description": "Ordens de reembalagem e recuperação",
+      "type": "object",
+      "properties": {
+        "empresaId": { "type": "string" },
+        "codigo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "caixas": { "type": "number" },
+        "motivo": { "type": "string" },
+        "operador": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["empresaId", "codigo", "caixas"]
+    }
+  },
+  "firestore": {
+    "/usuarios/{userId}": {
+      "schema": "Usuario",
+      "description": "Coleção de perfis de usuários"
+    },
+    "/empresas/{empresaId}": {
+      "schema": "Empresa",
+      "description": "Coleção de empresas"
+    },
+    "/colaboradores/{colabId}": {
+      "schema": "Colaborador",
+      "description": "Coleção de colaboradores da operação"
+    },
+    "/despejo/{docId}": {
+      "schema": "Despejo",
+      "description": "Coleção de registros de despejo"
+    },
+    "/acessos/{docId}": {
+      "schema": "Acesso",
+      "description": "Coleção de logs de acesso e auditoria de segurança"
+    },
+    "/acoes/{docId}": {
+      "schema": "Acao",
+      "description": "Coleção de planos de ação e alertas operacionais"
+    },
+    "/quebras/{docId}": {
+      "schema": "Quebra",
+      "description": "Coleção de quebras e avarias"
+    },
+    "/validades/{docId}": {
+      "schema": "Validade",
+      "description": "Coleção de lotes e datas de validade"
+    },
+    "/validades_retiradas/{docId}": {
+      "schema": "ValidadeRetirada",
+      "description": "Coleção de histórico de validades retiradas/recolhidas"
+    },
+    "/repack/{docId}": {
+      "schema": "Repack",
+      "description": "Coleção de ordens de repack"
+    }
+  }
+}

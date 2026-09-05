@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Armazém Fácil Pro - Gestão Logística e DPO</title>
+    <meta property="og:title" content="Armazém Fácil Pro - Gestão Logística e DPO" />
+    <meta name="description" content="Sistema integrado de gestão logística e armazém Ambev CCO Guarabira com controle de FEFO, Repack, Quebras, Despejo, 5S e automação em tempo real." />
+    <meta property="og:description" content="Sistema integrado de gestão logística e armazém Ambev CCO Guarabira com controle de FEFO, Repack, Quebras, Despejo, 5S e automação em tempo real." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <script>
+      (function() {
+        // Global error & unhandled rejection safety trap to prevent sandboxed iframe uncaught script crashes
+        window.addEventListener('error', function(event) {
+          if (!event.error && (!event.message || event.message === 'Script error.')) {
+            // Suppress muted cross-origin iframe Script error noise
+            event.preventDefault();
+            return;
+          }
+          console.warn('[Captured Runtime Error]:', event.message || event.error);
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+          console.warn('[Captured Unhandled Rejection]:', event.reason);
+          // Prevent browser from treating unhandled promises as fatal crashes
+          event.preventDefault();
+        });
+
+        // Sandbox dialog shims (prevent DOMException when allow-modals is not present)
+        try {
+          var originalAlert = window.alert;
+          window.alert = function(msg) {
+            console.log('[System Alert]:', msg);
+            try {
+              var toast = document.getElementById('toast');
+              if (toast) {
+                toast.textContent = String(msg || '');
+                toast.classList.add('show');
+                setTimeout(function() { toast.classList.remove('show'); }, 3500);
+              }
+            } catch (_) {}
+          };
+        } catch (_) {}
+
+        try {
+          window.confirm = function() { return true; };
+        } catch (_) {}
+
+        try {
+          window.prompt = function() { return null; };
+        } catch (_) {}
+
+        // In-memory Storage fallback for restricted/sandboxed storage
+        function createStorageShim() {
+          var store = {};
+          return {
+            getItem: function(key) { return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null; },
+            setItem: function(key, val) { store[key] = String(val); },
+            removeItem: function(key) { delete store[key]; },
+            clear: function() { store = {}; },
+            key: function(idx) { return Object.keys(store)[idx] || null; },
+            get length() { return Object.keys(store).length; }
+          };
+        }
+
+        try {
+          var testKey = '__test_ls__';
+          window.localStorage.setItem(testKey, '1');
+          window.localStorage.removeItem(testKey);
+        } catch (_) {
+          try {
+            Object.defineProperty(window, 'localStorage', {
+              value: createStorageShim(),
+              configurable: true,
+              writable: true
+            });
+          } catch (_) {}
+        }
+
+        try {
+          var testKey2 = '__test_ss__';
+          window.sessionStorage.setItem(testKey2, '1');
+          window.sessionStorage.removeItem(testKey2);
+        } catch (_) {
+          try {
+            Object.defineProperty(window, 'sessionStorage', {
+              value: createStorageShim(),
+              configurable: true,
+              writable: true
+            });
+          } catch (_) {}
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" crossorigin="anonymous" src="/src/main.tsx"></script>
+  </body>
+</html>

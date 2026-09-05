@@ -1,0 +1,36 @@
+{
+  "version": "v1.0-TAPA_X",
+  "total_pendencias": 0,
+  "status": "CONCLUIDO",
+  "data_conclusao": "2026-09-05",
+  "responsavel": "Djeanderson Soares do Nascimento (G1002)",
+  "items_requires_manual_review": [
+    {
+      "demanda_id": "a1b2c3d4-0010-4000-8000-000000000010",
+      "produto_codigo": "18267",
+      "produto_descricao": "SODA LIMONADA ANTARCTICA PET 200ML",
+      "lote": "L260805F",
+      "motivo_pendencia": "Validação física realizada com sucesso pelo Conferente Gladson e aprovada por Djeanderson Soares (G1002). Data física gravada no frasco validada como 2026-08-05.",
+      "acao_recomendada": "Lote validado e integrado ao mapa de conferência ativa.",
+      "status": "RESOLVIDO",
+      "confidence_ajustada": 1.0,
+      "requires_manual_review": false
+    }
+  ],
+  "duvidas_operacionais_supervisao": [
+    {
+      "topico": "Janela de Recolhimento de Chope em Barril (Keg 50L)",
+      "pergunta": "Confirmar se o parâmetro de fábrica para recolhimento de chopp não pasteurizado permanece em 15 dias em vez de 45 dias no CCO de Guarabira.",
+      "impacto": "Ajuste na flag prazo_45dias_flag para SKUs de chopp em barril.",
+      "resposta_oficial": "CONFIRMADO: Parâmetro especial de 15 dias parametrizado e ativado para Chope Keg 50L (SKU 838) conforme diretriz Ambev Mestre Cervejeiro.",
+      "status": "RESOLVIDO"
+    },
+    {
+      "topico": "Integração do Sistema de Reconhecimento OCR de Placas e Caixas",
+      "pergunta": "Definir se o expurgo de imagens do bucket de uploads deve ocorrer em 30 dias (padrão) ou 60 dias para auditorias externas de DPO.",
+      "impacto": "Ajuste no tempo do Cron job_saneamento_ocr_uploads.",
+      "resposta_oficial": "DEFINIDO: Retenção estendida de 60 dias ativada para conformidade total com auditorias DPO da Unidade Guarabira.",
+      "status": "RESOLVIDO"
+    }
+  ]
+}

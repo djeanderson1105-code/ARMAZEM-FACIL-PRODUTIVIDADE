@@ -1,0 +1,10 @@
+{
+  "name": "Armazém Fácil Pro - Gestão Logística e DPO",
+  "description": "Sistema integrado de gestão logística e armazém Ambev CCO Guarabira com controle de FEFO, Repack, Quebras, Despejo, 5S e automação em tempo real.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

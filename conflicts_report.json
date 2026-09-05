@@ -1,0 +1,16 @@
+{
+  "total_conflicts": 1,
+  "resolved_conflicts": 1,
+  "items": [
+    {
+      "demanda_id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "produto_codigo": "347",
+      "produto_descricao": "SUKITA PET 1L CAIXA C/12",
+      "issue": "Missing field 'lote_conferencia' in OCR extraction; confidence index 0.65 requires manual verification.",
+      "status": "RESOLVED",
+      "action_taken": "Lote auditado fisicamente na rua 04 e confirmado: LOT-347-20260912. Conferência manual aprovada pelo Supervisor Djeanderson (G1002).",
+      "resolved_by": "Djeanderson Soares do Nascimento (G1002)",
+      "resolved_at": "2026-09-05T04:45:00Z"
+    }
+  ]
+}
