@@ -10,6 +10,12 @@
     <link rel="icon" type="image/png" href="./favicon.png" />
     <script>
       (function() {
+        // GitHub Pages repository root path fix: ensure trailing slash so relative module paths resolve correctly
+        if (window.location.pathname && !window.location.pathname.endsWith('/') && !window.location.pathname.split('/').pop().includes('.')) {
+          window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+          return;
+        }
+
         // Global error & unhandled rejection safety trap to prevent sandboxed iframe uncaught script crashes
         window.addEventListener('error', function(event) {
           if (!event.error && (!event.message || event.message === 'Script error.')) {
@@ -92,13 +98,13 @@
         }
       })();
     </script>
-    <script type="module" crossorigin src="./assets/index-BeRCS21L.js"></script>
+    <script type="module" crossorigin src="./assets/index-QgEynFcc.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/vendor-motion-R-v-Ilmk.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-recharts-uTeE88LP.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-export-DTl0hM5a.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-firebase-BpiU0pGs.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-PeKEqfaK.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-Cc3RfpE1.css">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-DgnpQVXs.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-DukmwQlv.css">
   </head>
   <body>
     <div id="root"></div>
